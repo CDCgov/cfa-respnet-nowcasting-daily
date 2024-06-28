@@ -1,0 +1,35 @@
+---
+title: xxx
+author:
+  - name: xxx
+    corresponding: true
+    email: xxx
+    roles:
+      - xxx
+    affiliations:
+      - xxx
+keywords:
+  - xxx
+abstract: |
+  xxx
+plain-language-summary: |
+  xxx
+key-points:
+  - xxx
+date: last-modified
+bibliography: references.bib
+citation:
+  container-title: Earth and Space Science
+number-sections: true
+---
+
+## Introduction
+
+## Data & Methods {#sec-data-methods}
+
+## Conclusion
+
+## References {.unnumbered}
+
+::: {#refs}
+:::
