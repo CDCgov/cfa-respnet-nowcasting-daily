@@ -2,12 +2,15 @@
 
 ## Overview
 
-The purpose of this project is to investigate whether inference with the daily flu data from FluSurv-NET is possible or useful given the missingness induced by the reporting cycle. This is very much a work in progress.
+The purpose of this project is to investigate whether we can use `epinowcast` to effectively perform daily nowcasts when we have a fixed weekly reporting cycle (e.g., all hospitalizations reported on Friday of each week). This is very much a work in progress.
 
 ## Repo Structure
 
-`nowcastDaily` contains the R package
-(more to be added later)
+`R` contains the R code for this projects. Subdirectories `Real Data Analysis` and `Simulated Data Analysis` contain the code for the real and simulated data respectively.
+
+`Stan` contains any Stan code necessary to run the models. Currently it only contains the `epinowcast` model from [here](https://github.com/seabbs/epinowcast-fixed-reporting-example/tree/main).
+
+`manuscript` will ultimately contain the draft of a paper for this project. Currently I am using [Overleaf](https://www.overleaf.com/read/xsqgyrpjrtps#af9a59).
 
 ## Project Admin
 
