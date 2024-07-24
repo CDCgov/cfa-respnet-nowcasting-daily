@@ -1,8 +1,11 @@
 #####
 # Exclude many data and output file types by default
 
+rslt_plots_files/
+
 # Data
 *.csv
+*.rds
 *.tsv
 *.parquet
 *.dat

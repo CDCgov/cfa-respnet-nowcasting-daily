@@ -1,0 +1,48 @@
+---
+title: "Plots of Results of Various Model Runs"
+author: "Jessalyn Sebastian"
+date: "2024-07-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = F)
+library(epinowcast)
+```
+
+# Nowcasts
+
+```{r read nowcasts}
+nowcast_daily_data <- readRDS("Nowcasts/nowcast_daily_data.rds")
+nowcast_default <- readRDS("Nowcasts/nowcast_default.rds")
+nowcast_hzd_eff <- readRDS("Nowcasts/nowcast_hzd_eff.rds")
+nowcast_hardcode_hzd <- readRDS("Nowcasts/nowcast_hzd_eff.rds")
+```
+
+```{r plot nowcasts}
+# Daily data
+latest <- readRDS("Data/latest_daily_dat.rds") |>
+  enw_filter_reference_dates(include_days = 28,
+                             latest_date = "2024-04-26")
+plot(nowcast_daily_data, latest_obs = latest) + ggplot2::ggtitle("Daily Data")
+# Reporting cycle data
+# Epinowcast with DOW random effect
+latest <- readRDS("Data/latest_rep_cycle_dat.rds") |>
+  enw_filter_reference_dates(include_days = 28,
+                             latest_date = "2024-04-26")
+plot(nowcast_default, latest_obs = latest) + ggplot2::ggtitle("Epinowcast")
+# Epinowcast with fixed effect on hzd
+plot(nowcast_hzd_eff, latest_obs = latest) + ggplot2::ggtitle("Hazard Effect")
+# Epinowcast with hardcoded hzd effects
+plot(nowcast_hardcode_hzd, latest_obs = latest) + ggplot2::ggtitle("Hazard Effect - Hardcoded")
+```
+
+# Posterior predictive
+
+```{r pp, eval = F}
+#nowcast <- summary(
+# nowcast, type = "posterior_prediction", probs = c(0.05, 0.2, 0.8, 0.95)
+#)
+#enw_plot_pp_quantiles(nowcast) +
+# ggplot2::facet_wrap(ggplot2::vars(reference_date), scales = "free")
+```
