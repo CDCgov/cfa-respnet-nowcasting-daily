@@ -24,19 +24,19 @@ Ran four models:
 
 Model 1:
 
-![](rslt_plots_files/figure-html/plot nowcasts-1.png)
+![](rslt_plots_files/figure-html/plot&#32;nowcasts-1.png)
 
 Model 2:
 
-![](rslt_plots_files/figure-html/plot nowcasts-2.png)
+![](rslt_plots_files/figure-html/plot&#32;nowcasts-2.png)
 
 Model 3:
 
-![](rslt_plots_files/figure-html/plot nowcasts-3.png)
+![](rslt_plots_files/figure-html/plot&#32;nowcasts-3.png)
 
 Model 4:
 
-![](rslt_plots_files/figure-html/plot nowcasts-4.png)
+![](rslt_plots_files/figure-html/plot&#32;nowcasts-4.png)
 
 # Running Time and Basic Diagnostics
 
