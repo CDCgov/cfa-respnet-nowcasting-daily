@@ -1,39 +1,19 @@
 # Run epinowcast() on daily simulated data. These are the plain
 # daily data without a weekly reporting cycle layererd on.
-
+library(here)
 library(dplyr)
-library(epinowcast)
 
-setwd(here::here())
+setwd(here())
+source(file.path("R", "Simulated Data Analysis", "Run Models",
+                 "model_definition.R"))
 sim_data_daily <- readRDS("Data/retrospective_daily_dat.rds")
 
-fit <- enw_fit_opts(
-  save_warmup = FALSE, pp = TRUE,
-  chains = 4, threads_per_chain = 1,
-  parallel_chains = 4,
-  iter_warmup = 1000, iter_sampling = 2000,
-  adapt_delta = 0.98, max_treedepth = 12
-)
-
-expectation_module <- enw_expectation(
-  r = ~ 1 + rw(day),
-  data = sim_data_daily
-)
-
-reference_module <- enw_reference(parametric = ~ 1,
-                                  distribution = "gamma",
-                                  data = sim_data_daily)
-
-report_module <- enw_report(~ (1 | day_of_week),
-                            data = sim_data_daily)
-
-obs_module <- enw_obs(family = "negbin", data = sim_data_daily)
-
 nowcast_daily_data <- epinowcast(sim_data_daily,
-  expectation = expectation_module,
-  report = report_module,
-  reference = reference_module,
-  obs = obs_module,
+  expectation = expectation_module(data = sim_data_daily),
+  report = enw_report(~ (1 | day_of_week),
+                      data = sim_data_daily),
+  reference = reference_module(data = sim_data_daily),
+  obs = obs_module(data = sim_data_daily),
   fit = fit,
 )
 
