@@ -3,3 +3,5 @@ _extensions
 _freeze
 notebooks
 requirements.txt
+_manuscript
+/.quarto/

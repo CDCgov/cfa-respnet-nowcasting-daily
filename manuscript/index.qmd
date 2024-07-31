@@ -1,8 +1,22 @@
 ---
-title: xxx
+title: Nowcast Daily Outline
 author:
-  - name: xxx
-    corresponding: true
+  - name: Jessalyn Sebastian
+    corresponding: false
+    email: xxx
+    roles:
+      - xxx
+    affiliations:
+      - xxx
+  - name: Sam Abbott
+    corresponding: false
+    email: xxx
+    roles:
+      - xxx
+    affiliations:
+      - xxx
+  - name: Katelyn Gostic
+    corresponding: false
     email: xxx
     roles:
       - xxx
@@ -19,15 +33,84 @@ key-points:
 date: last-modified
 bibliography: references.bib
 citation:
-  container-title: Earth and Space Science
+  container-title: xxx
 number-sections: true
 ---
 
 ## Introduction
 
-## Data & Methods {#sec-data-methods}
+Infectious disease outbreaks pose significant challenges to public health authorities, necessitating accurate and timely estimation of metrics like counts of hospital admissions. Nowcasting is the real-time estimation of such metrics, with adjustment for reporting delays. The granularity of these nowcasts plays a pivotal role; finer resolutions - for example, daily nowcasts as opposed to weekly - offer a more detailed understanding of the outbreak's dynamics and aid in predicting healthcare demands with greater precision. 
 
-## Conclusion
+A significant challenge in nowcasting lies in navigating the complexities of reporting cycles. For the purposes of this report, we focus on the scenario of dealing with data that conforms to a fixed cycle of reporting, but whose resolution is higher than the reporting cycle. For example, data may be reported once weekly, but have daily resolution. Performing a weekly nowcast using these data is straightforward, as daily data can be aggregated to weekly data; the difficulty arises when daily nowcasts are desired. Given the weekly reporting schedule, accurately estimating delay distributions on a daily scale becomes difficult. 
+
+Within the framework of the `R` package `epinowcast`, we evaluate a few possible methods for nowcasting hospital admissions daily with a weekly reporting cycle. We test these methods on simulated data, where we are able to directly compare performance of the models on daily data with a weekly reporting cycle versus data where report dates are available with daily resolution. We also compare the results of the models using influenza data from the 2023-2024 flu season; since the true number of hospitalizations is available retrospectively, we can 
+
+## Methods {#sec-methods}
+
+Using `epinowcast` (details below), we will compare four different methods for nowcasting a fixed weekly reporting cycle with daily resolution:
+
+1. A model using `epinowcast`'s built-in features with a daily timestep. This model does not account for the known, fixed reporting cycle.
+
+2. A model using `epinowcast`'s built-in features with a daily timestep and an effect on the reporting hazard indicating whether a date is a reporting day or not.
+
+3.  A model which modifies (1) such that inferred reporting probabilities are aggregated to only reporting days just before being input to the observation likelihood.
+
+4. A model which modifies (2) such that effects on the reporting hazard are hardcoded to large negative values for non-reporting days. This tells the model that the reporting hazard for non-reporting days should be (effectively) zero.
+
+
+All of these are described in further detail below.
+
+### Modeling
+
+The `epinowcast` package in `R` is designed as a versatile framework for monitoring infectious diseases in real-time. It is an extension of the model developed by Günther et al. in _Nowcasting the COVID-19 pandemic in Bavaria._ \cite{guntheretal}, which itself was an extension of the model proposed by Höhle and Heiden
+
+#### `epinowcast` with daily timestep and DOW random effects on reporting {#sec-model1}
+
+The instantaneous growth rate $r_t$, defined as the log of the expected number of final observed hospital admissions between times $t$ and $t-1$, is modeled with a daily random walk:
+
+$$\log r_1 \sim N(r_0, \sigma_1^2); \hspace{1em} \log r_t\mid r_{t-1} \sim N(\log r_{t-1}, \sigma^2)$$
+
+And the expected final number of admissions for a reference day $t$, $\lambda_t$, is given by
+
+$$\lambda_1\sim\text{LogNormal}(\mu_\ell, \sigma_\ell); \hspace{1em} \lambda_t = r_t\lambda_{t-1}$$
+
+The delay distribution is parameterized with a discrete-time hazard model. Delay probabilities, given by $p_{t,d}$, are converted to hazards:
+
+\begin{align}
+  h_{t,d} &= P(\text{delay} = d \mid \text{delay} \geq d, W_{t,d}) \\
+    &= p_{t,d}\bigg(1-\sum_{i=0}^{d-1} p_{t,i}\bigg)^{-1}
+\end{align}
+
+where $W_{t,d}$ is the design matrix that encodes the baseline delay distribution and the day of week of the report. This can then be modeled via a logistic regression
+
+$$\text{logit}(h_{t,d}) = \gamma_{t,d} + b_{r,1}\mathbb{1}\{\} + $$
+
+where $\gamma_{t,d}$ represents the baseline hazard, for which we use a gamma distribution. The gamma distribution is discretized and adjusted for the maximum possible delay, $D$, to obtain parametric report probabilities $p'_{t,d}$. These are then converted to logit hazards as $\gamma_{t,d} = p_{t,d}\big(1-\sum_{i=0}^{d-1} p_{t,i}\big)^{-1}$.
+
+
+TODO: DOW reporting, add indexing t = 1,...T and d = 1,...,D
+
+#### `epinowcast` with report day indicator fixed effect on reporting hazard {#sec-model2}
+
+#### `epinowcast` with reporting probabilities aggregated in the likelihood {#sec-model3}
+
+#### `epinowcast` with hazard hardcoded to be approximately zero on non-reporting days {#sec-model4}
+
+### Simulations
+
+### Case Study
+
+## Results
+
+### Validation
+
+### Simulated Scenario
+
+### Case Study
+
+## Conclusions
+
+### Limitations and Further Work
 
 ## References {.unnumbered}
 
