@@ -25,5 +25,5 @@ fit <- enw_fit_opts(
   chains = 2, threads_per_chain = 1,
   parallel_chains = 2,
   iter_warmup = 1000, iter_sampling = 2000,
-  adapt_delta = 0.95, max_treedepth = 12
+  adapt_delta = 0.98, max_treedepth = 12
 )
