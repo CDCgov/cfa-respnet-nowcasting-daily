@@ -10,7 +10,7 @@ The purpose of this project is to investigate whether we can use `epinowcast` to
 
 `Stan` contains any Stan code necessary to run the models. Currently it only contains the `epinowcast` model from [here](https://github.com/seabbs/epinowcast-fixed-reporting-example/tree/main).
 
-`manuscript` will ultimately contain the draft of a paper for this project. Currently I am using [Overleaf](https://www.overleaf.com/read/xsqgyrpjrtps#af9a59).
+`manuscript` will ultimately contain the draft of a paper for this project.
 
 ## Project Admin
 
