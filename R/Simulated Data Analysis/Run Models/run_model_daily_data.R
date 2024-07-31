@@ -1,5 +1,5 @@
 # Run epinowcast() on daily simulated data. These are the plain
-# data without a weekly reporting cycle layererd on.
+# daily data without a weekly reporting cycle layererd on.
 
 library(dplyr)
 library(epinowcast)

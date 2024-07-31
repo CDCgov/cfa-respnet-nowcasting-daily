@@ -4,11 +4,10 @@ library(tidyr)
 library(here)
 
 setwd(here::here())
-#sim_data <- read.csv("Data/sim_data.csv")[, -1]
-sim_data <- readRDS("Data/sim_data.rds")
+sim_data_saved <- read.csv("Data/sim_data.csv")[, -1]
 # Sim data generated with functions in sim_hospital_admissions.R
-colnames(sim_data) <- c("reference_date", "report_date")
-sim_data <- sim_data |>
+colnames(sim_data_saved) <- c("reference_date", "report_date")
+sim_data <- sim_data_saved |>
   mutate_all(~ as.Date(.x))
 
 # Get incidence from linelist
@@ -18,6 +17,7 @@ sim_data <- sim_data |>
   enw_complete_dates(max_delay = 28) |>
   mutate(day_of_week = lubridate::wday(report_date, label = TRUE))
 
+#### DAILY DATA ####
 # Get both retrospective and latest observations, and save (this
 # will be the daily data)
 sim_data_retrospective <- sim_data |>
@@ -32,6 +32,7 @@ sim_data_latest <- sim_data |>
   enw_latest_data()
 saveRDS(sim_data_latest, "Data/latest_daily_dat.rds")
 
+#### REPORTING CYCLE DATA ####
 # Layer on reporting cycle
 rep_cycle_data <- sim_data |>
   mutate(confirm = new_confirm) |>
@@ -65,34 +66,35 @@ sim_data_latest <- rep_cycle_data |>
   enw_latest_data()
 saveRDS(sim_data_latest, "Data/latest_rep_cycle_dat.rds")
 
-# STRATIFIED DOW DATA ----------
-# Get data stratified by reference day of week
-dow_data <- sim_data |>
-  mutate(ref_DOW = lubridate::wday(reference_date, label = TRUE))
+#### AGGREGATE DAILY TO WEEKLY DATA ####
+# From the saved data, transform to dates
+sim_data_weekly <- sim_data_saved |>
+  mutate_all(~ as.Date(.x))
+# Then, using lubridate, get the "reference week" and
+# the "report week"
+sim_data_weekly <- sim_data_weekly |>
+  mutate(reference_date = lubridate::ceiling_date(reference_date,
+                                                  unit = "weeks",
+                                                  week_start = "Wed")) |>
+  mutate(report_date = lubridate::ceiling_date(report_date,
+                                               unit = "weeks",
+                                               week_start = "Wed"))
+# Then once again get incidence from linelist
+sim_data_weekly <- sim_data_weekly |>
+  filter(report_date >= "2024-02-01") |>
+  enw_linelist_to_incidence(max_delay = 28) |>
+  enw_complete_dates(timestep = "week") |>
+  mutate(day_of_week = lubridate::wday(report_date, label = TRUE))
 
-dow_data_list <- vector("list", 7L)
+# And get both retrospective and latest observations, and save (this
+# will be the weekly data)
+sim_data_weekly_retrospective <- sim_data_weekly |>
+  enw_filter_report_dates(remove_days = 25) |>
+  enw_filter_reference_dates(include_days = 65) |>
+  mutate(.observed = ifelse(day_of_week == "Wed", TRUE, FALSE)) |>
+  enw_preprocess_data(timestep = "week", max_delay = 5)
+saveRDS(sim_data_weekly_retrospective, "Data/retrospective_weekly_dat.rds")
 
-dow_data_list[[1]] <- dow_data |> filter(ref_DOW == "Sun")
-dow_data_list[[2]] <- dow_data |> filter(ref_DOW == "Mon")
-dow_data_list[[3]] <- dow_data |> filter(ref_DOW == "Tue")
-dow_data_list[[4]] <- dow_data |> filter(ref_DOW == "Wed")
-dow_data_list[[5]] <- dow_data |> filter(ref_DOW == "Thu")
-dow_data_list[[6]] <- dow_data |> filter(ref_DOW == "Fri")
-dow_data_list[[7]] <- dow_data |> filter(ref_DOW == "Sat")
-
-dow_data_retrospective <- lapply(dow_data_list, function(dat) {
-  rslt <- dat |>
-    enw_linelist_to_incidence(max_delay = 28) |>
-    enw_complete_dates(timestep = "week") |>
-    mutate(day_of_week = lubridate::wday(report_date, label = TRUE)) |>
-    enw_filter_report_dates(remove_days = 30) |>
-    enw_filter_reference_dates(include_days = 60) |>
-    mutate(.observed = ifelse(day_of_week == "Wed", TRUE, FALSE)) |>
-    enw_preprocess_data(timestep = "week")
-  return(rslt)
-})
-saveRDS(dow_data_retrospective, "Data/dow_data_retrospective.rds")
-# TODO: fix dow latest data
-dow_data_latest <- lapply(dow_data_list, enw_latest_data)
-saveRDS(dow_data_latest, "Data/dow_data_latest.rds")
-
+sim_data_weekly_latest <- sim_data_weekly |>
+  enw_latest_data()
+saveRDS(sim_data_weekly_latest, "Data/latest_weekly_dat.rds")

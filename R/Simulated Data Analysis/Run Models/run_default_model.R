@@ -9,6 +9,7 @@ library(dplyr)
 library(epinowcast)
 
 setwd(here())
+# Note the last reference_date available in these data is Friday, 4/26
 sim_data <- readRDS("Data/retrospective_rep_cycle_dat.rds")
 
 expectation_module <- enw_expectation(

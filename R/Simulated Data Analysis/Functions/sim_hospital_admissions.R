@@ -130,11 +130,3 @@ sim_seihrd <- function(init_state = c(99999, 1, 0, 0, 0, 0), beta, gamma, nu,
   return(rslt)
 }
 
-
-seihrd <- readRDS("Data/seihrd_rslts.rds")
-event_times <- seihrd$Time[c(FALSE, diff(seihrd$H) == 1)]
-
-sim_data <- get_report_times(event_times, start_date = "2024-01-01",
-                             dow_effect = c(0.25, 1, 1, 1, 1, 1, 0.5),
-                             delay_dist = "pgamma", max_delay = 28,
-                             shape = 1, scale = 5)
