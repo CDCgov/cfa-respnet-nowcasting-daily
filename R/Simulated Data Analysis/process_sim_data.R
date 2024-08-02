@@ -89,8 +89,8 @@ sim_data_weekly <- sim_data_weekly |>
 # And get both retrospective and latest observations, and save (this
 # will be the weekly data)
 sim_data_weekly_retrospective <- sim_data_weekly |>
-  enw_filter_report_dates(remove_days = 25) |>
-  enw_filter_reference_dates(include_days = 65) |>
+  enw_filter_report_dates(remove_days = 30) |>
+  enw_filter_reference_dates(include_days = 60) |>
   mutate(.observed = ifelse(day_of_week == "Wed", TRUE, FALSE)) |>
   enw_preprocess_data(timestep = "week", max_delay = 5)
 saveRDS(sim_data_weekly_retrospective, "Data/retrospective_weekly_dat.rds")
