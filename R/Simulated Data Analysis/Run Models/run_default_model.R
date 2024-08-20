@@ -15,7 +15,7 @@ sim_data <- readRDS("Data/retrospective_rep_cycle_dat.rds")
 nowcast_default <- epinowcast(sim_data,
   expectation = expectation_module(data = sim_data),
   reference = reference_module(data = sim_data),
-  report = enw_report(~ (1 | day_of_week), data = sim_data),
+  report = enw_report(~ day_of_week, data = sim_data),
   obs = obs_module(data = sim_data),
   fit = fit
 )

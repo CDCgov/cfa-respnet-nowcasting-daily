@@ -10,7 +10,7 @@ sim_data_daily <- readRDS("Data/retrospective_daily_dat.rds")
 
 nowcast_daily_data <- epinowcast(sim_data_daily,
   expectation = expectation_module(data = sim_data_daily),
-  report = enw_report(~ (1 | day_of_week),
+  report = enw_report(~ day_of_week,
                       data = sim_data_daily),
   reference = reference_module(data = sim_data_daily),
   obs = obs_module(data = sim_data_daily),

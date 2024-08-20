@@ -45,6 +45,10 @@ get_weekly_nowcast_from_daily <- function(nowcast, nowcast_data,
     qt <- post_samples |>
       dplyr::group_by(ref_wk) |>
       dplyr::summarise(tibble::as_tibble_row(quantile(week_sample, quantiles)))
-    return(qt)
+    mean <- post_samples |>
+      dplyr::group_by(ref_wk) |>
+      dplyr::summarise(mean = mean(week_sample)) |>
+      dplyr::select(mean)
+    return(cbind(qt, mean))
   }
 }

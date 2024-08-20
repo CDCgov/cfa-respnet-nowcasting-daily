@@ -25,7 +25,7 @@ nowcast_weekly_agg <- epinowcast(sim_data_weekly,
 )
 
 latest <- readRDS("Data/latest_weekly_dat.rds") |>
-  enw_filter_reference_dates(include_days = 28,
+  enw_filter_reference_dates(earliest_date = "2024-04-03",
                              latest_date = "2024-04-26")
 plot(nowcast_weekly_agg, latest_obs = latest)
 

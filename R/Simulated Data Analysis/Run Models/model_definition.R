@@ -6,7 +6,8 @@ library(epinowcast)
 
 expectation_module <- partial(
   enw_expectation,
-  r = ~ 1 + rw(day)
+  r = ~ 1 + rw(day),
+  observation = ~ (1 | day_of_week)
 )
 
 reference_module <- partial(

@@ -67,34 +67,24 @@ sim_data_latest <- rep_cycle_data |>
 saveRDS(sim_data_latest, "Data/latest_rep_cycle_dat.rds")
 
 #### AGGREGATE DAILY TO WEEKLY DATA ####
-# From the saved data, transform to dates
-sim_data_weekly <- sim_data_saved |>
-  mutate_all(~ as.Date(.x))
-# Then, using lubridate, get the "reference week" and
-# the "report week"
-sim_data_weekly <- sim_data_weekly |>
-  mutate(reference_date = lubridate::ceiling_date(reference_date,
-                                                  unit = "weeks",
-                                                  week_start = "Wed")) |>
-  mutate(report_date = lubridate::ceiling_date(report_date,
-                                               unit = "weeks",
-                                               week_start = "Wed"))
-# Then once again get incidence from linelist
-sim_data_weekly <- sim_data_weekly |>
+# Shouldn't specify a max_delay before using enw_aggregate_cumulative
+sim_data <- sim_data_saved |>
+  mutate_all(~ as.Date(.x)) |>
   filter(report_date >= "2024-02-01") |>
-  enw_linelist_to_incidence(max_delay = 28) |>
-  enw_complete_dates(timestep = "week") |>
+  enw_linelist_to_incidence() |>
+  enw_complete_dates() |>
   mutate(day_of_week = lubridate::wday(report_date, label = TRUE))
 
-# And get both retrospective and latest observations, and save (this
-# will be the weekly data)
-sim_data_weekly_retrospective <- sim_data_weekly |>
+sim_data_weekly_retrospective <- sim_data |>
   enw_filter_report_dates(remove_days = 30) |>
-  enw_filter_reference_dates(include_days = 60) |>
-  mutate(.observed = ifelse(day_of_week == "Wed", TRUE, FALSE)) |>
-  enw_preprocess_data(timestep = "week", max_delay = 5)
+  enw_filter_reference_dates(earliest_date = "2024-02-29") |>
+  enw_aggregate_cumulative(timestep = "week") |>
+  enw_preprocess_data(max_delay = 4,
+                      timestep = "week")
 saveRDS(sim_data_weekly_retrospective, "Data/retrospective_weekly_dat.rds")
 
-sim_data_weekly_latest <- sim_data_weekly |>
+sim_data_weekly_latest <- sim_data |>
+  enw_filter_reference_dates(earliest_date = "2024-02-29") |>
+  enw_aggregate_cumulative(timestep = "week") |>
   enw_latest_data()
 saveRDS(sim_data_weekly_latest, "Data/latest_weekly_dat.rds")

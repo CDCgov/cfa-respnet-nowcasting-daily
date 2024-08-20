@@ -16,7 +16,7 @@ model <- enw_model(
 nowcast <- epinowcast(sim_data,
   expectation = expectation_module(data = sim_data),
   reference = reference_module(data = sim_data),
-  report = enw_report(~ not_report_day + (1 | day_of_week),
+  report = enw_report(~ not_report_day,
                       data = sim_data),
   obs = obs_module(observation_indicator = ".observed",
                    data = sim_data),

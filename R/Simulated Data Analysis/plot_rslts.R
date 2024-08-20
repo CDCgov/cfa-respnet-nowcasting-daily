@@ -4,20 +4,22 @@ library(dplyr)
 list.files("R/Simulated Data Analysis/Functions",
            pattern = "*.R", full.names = TRUE) |>
   purrr::walk(source)
+setwd(here::here())
 
 nowcast_daily <- readRDS("Nowcasts/nowcast_daily_data.rds")
 nowcast_default <- readRDS("Nowcasts/nowcast_default.rds")
 nowcast_hzd_eff <- readRDS("Nowcasts/nowcast_hzd_eff.rds")
 nowcast_hardcode_hzd <- readRDS("Nowcasts/nowcast_hardcode_hzd.rds")
+nowcast_weekly_data <- readRDS("Nowcasts/nowcast_weekly_data.rds")
 
 # Plot latest and retrospective data used for nowcasting
-dat <- readRDS("/Users/jessalynsebastian/Code/cfa-respnet-nowcasting-daily/Data/retrospective_daily_dat.rds")
+dat <- readRDS("Data/retrospective_daily_dat.rds")
 dat <- dat$obs[[1]] |>
   group_by(reference_date) |>
   summarise(retrospective_total = max(confirm)) |>
   ungroup() |>
   tidyr::drop_na()
-dat_latest <- readRDS("/Users/jessalynsebastian/Code/cfa-respnet-nowcasting-daily/Data/latest_rep_cycle_dat.rds")
+dat_latest <- readRDS("Data/latest_rep_cycle_dat.rds")
 dat_latest <- dat_latest |>
   group_by(reference_date) |>
   summarise(latest_total = max(confirm)) |>
@@ -36,6 +38,40 @@ ggplot(dat, aes(x = reference_date)) +
   xlab("Date") +
   ylab("Hospital Admissions") +
   theme_bw()
+
+
+# Plot each daily nowcast on top of the daily/daily
+latest <- readRDS("Data/latest_daily_dat.rds")
+plot_layered(nowcasts = list(nowcast_daily, nowcast_default),
+             labels = c("Daily/Daily", "DOW Random Eff"),
+             latest = latest)
+plot_layered(nowcasts = list(nowcast_daily, nowcast_hardcode_hzd),
+             labels = c("Daily/Daily", "Hardcoded Hazard"),
+             latest = latest)
+
+
+
+
+# TODO: plot each daily nowcast, aggregated to weekly, on top of weekly/weekly
+latest_wk <- readRDS("Data/latest_weekly_dat.rds")
+week_model_smry <- enw_nowcast_summary(nowcast_weekly_data$fit[[1]],
+                                       nowcast_weekly_data$latest[[1]],
+                                       timestep = "week")[, c("reference_date",
+                                                              "q5", "q20",
+                                                              "median", "q80",
+                                                              "q95", "mean")]
+nowcast_default_agg <- get_weekly_nowcast_from_daily(nowcast_default,
+                                                     nowcast_data = readRDS("Data/retrospective_daily_dat.rds"), # nolint
+                                                     end_of_week = "Wed",
+                                                     output = "summary")
+nowcast_hardcode_agg <- get_weekly_nowcast_from_daily(nowcast_hardcode_hzd,
+                                                      nowcast_data = readRDS("Data/retrospective_daily_dat.rds"), # nolint
+                                                      end_of_week = "Wed",
+                                                      output = "summary")
+plot_layered(nowcasts = list(week_model_smry, nowcast_default_agg),
+             labels = c("Weekly/Weekly", "DOW Random Eff"),
+             latest = latest_wk, input = "summary")
+
 
 
 # Plots of nowcasts all on same frame
@@ -68,53 +104,3 @@ daily_to_weekly <- get_weekly_nowcast_from_daily(nowcast_default,
                                                  nowcast_data = readRDS("Data/retrospective_daily_dat.rds"), # nolint
                                                  end_of_week = "Wed",
                                                  output = "summary")
-p1 <- ggplot(daily_to_weekly, aes(x = ref_wk)) +
-  geom_line(aes(y = `50%`)) +
-  geom_ribbon(aes(ymin = `5%`, ymax = `95%`),
-              fill =  "#1f87aa", alpha = 0.2, linewidth = 0.2) +
-  geom_ribbon(aes(ymin = `20%`, ymax = `80%`, col = NULL),
-              fill = "#1f87aa", alpha = 0.2) +
-  ylab("Nowcast") +
-  xlab("Reference Date") +
-  ylim(250, 850) +
-  theme_bw()  + ggtitle("Daily/Daily")
-
-p2 <- ggplot(daily_to_weekly, aes(x = ref_wk)) +
-  geom_line(aes(y = `50%`)) +
-  geom_ribbon(aes(ymin = `5%`, ymax = `95%`),
-              fill =  "#1f87aa", alpha = 0.2, linewidth = 0.2) +
-  geom_ribbon(aes(ymin = `20%`, ymax = `80%`, col = NULL),
-              fill = "#1f87aa", alpha = 0.2) +
-  ylab("Nowcast") +
-  xlab("Reference Date") +
-  ylim(250, 850) +
-  theme_bw() + ggtitle("Rep Cycle - DOW Effect")
-
-
-p3 <- ggplot(daily_to_weekly, aes(x = ref_wk)) +
-  geom_line(aes(y = `50%`)) +
-  geom_ribbon(aes(ymin = `5%`, ymax = `95%`),
-              fill =  "#1f87aa", alpha = 0.2, linewidth = 0.2) +
-  geom_ribbon(aes(ymin = `20%`, ymax = `80%`, col = NULL),
-              fill = "#1f87aa", alpha = 0.2) +
-  ylab("Nowcast") +
-  xlab("Reference Date") +
-  ylim(250, 850) +
-  theme_bw() + ggtitle("Rep Cycle - Hzd Effect")
-
-p4 <- ggplot(daily_to_weekly, aes(x = ref_wk)) +
-  geom_line(aes(y = `50%`)) +
-  geom_ribbon(aes(ymin = `5%`, ymax = `95%`),
-              fill =  "#1f87aa", alpha = 0.2, linewidth = 0.2) +
-  geom_ribbon(aes(ymin = `20%`, ymax = `80%`, col = NULL),
-              fill = "#1f87aa", alpha = 0.2) +
-  ylab("Nowcast") +
-  xlab("Reference Date") +
-  ylim(250, 850) +
-  theme_bw() + ggtitle("Rep Cycle - Hardcode Hzd Eff")
-latest <- readRDS("Data/latest_weekly_dat.rds") |>
-  enw_filter_reference_dates(include_days = 28,
-                             latest_date = "2024-04-26")
-p5 <- plot(nowcast_weekly_data, latest) + ggtitle("Aggregated Weekly Data")
-library(patchwork)
-(p1 + p2) / (p3 + p4) / p5
