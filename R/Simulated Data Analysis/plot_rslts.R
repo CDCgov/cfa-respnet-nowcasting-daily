@@ -25,14 +25,14 @@ dat_latest <- dat_latest |>
   summarise(latest_total = max(confirm)) |>
   ungroup() |>
   filter(reference_date >= min(dat$reference_date, na.rm = TRUE) &
-                  reference_date <= max(dat$reference_date, na.rm = TRUE))
+           reference_date <= max(dat$reference_date, na.rm = TRUE))
 
 dat <- full_join(dat, dat_latest, by = "reference_date")
 
 ggplot(dat, aes(x = reference_date)) +
-  geom_point(aes(y = retrospective_total, col = "Retrospective")) +
+  geom_point(aes(y = retrospective_total, col = "As of Apr 26")) +
   geom_point(aes(y = latest_total, col = "Latest")) +
-  geom_line(aes(y = retrospective_total, col = "Retrospective")) +
+  geom_line(aes(y = retrospective_total, col = "As of Apr 26")) +
   geom_line(aes(y = latest_total, col = "Latest")) +
   labs(colour = "Dataset") +
   xlab("Date") +
@@ -43,7 +43,7 @@ ggplot(dat, aes(x = reference_date)) +
 # Plot each daily nowcast on top of the daily/daily
 latest <- readRDS("Data/latest_daily_dat.rds")
 plot_layered(nowcasts = list(nowcast_daily, nowcast_default),
-             labels = c("Daily/Daily", "DOW Random Eff"),
+             labels = c("Daily/Daily", "DOW Eff"),
              latest = latest)
 plot_layered(nowcasts = list(nowcast_daily, nowcast_hardcode_hzd),
              labels = c("Daily/Daily", "Hardcoded Hazard"),
@@ -54,6 +54,7 @@ plot_layered(nowcasts = list(nowcast_daily, nowcast_hardcode_hzd),
 
 # TODO: plot each daily nowcast, aggregated to weekly, on top of weekly/weekly
 latest_wk <- readRDS("Data/latest_weekly_dat.rds")
+retrospective_daily_dat <- readRDS("Data/retrospective_daily_dat.rds")
 week_model_smry <- enw_nowcast_summary(nowcast_weekly_data$fit[[1]],
                                        nowcast_weekly_data$latest[[1]],
                                        timestep = "week")[, c("reference_date",
@@ -61,46 +62,21 @@ week_model_smry <- enw_nowcast_summary(nowcast_weekly_data$fit[[1]],
                                                               "median", "q80",
                                                               "q95", "mean")]
 nowcast_default_agg <- get_weekly_nowcast_from_daily(nowcast_default,
-                                                     nowcast_data = readRDS("Data/retrospective_daily_dat.rds"), # nolint
-                                                     end_of_week = "Wed",
+                                                     nowcast_data = retrospective_daily_dat, # nolint
+                                                     end_of_week = 4,
+                                                     # 4 is Wed
                                                      output = "summary")
 nowcast_hardcode_agg <- get_weekly_nowcast_from_daily(nowcast_hardcode_hzd,
-                                                      nowcast_data = readRDS("Data/retrospective_daily_dat.rds"), # nolint
-                                                      end_of_week = "Wed",
+                                                      nowcast_data = retrospective_daily_dat, # nolint
+                                                      end_of_week = 4,
                                                       output = "summary")
 plot_layered(nowcasts = list(week_model_smry, nowcast_default_agg),
-             labels = c("Weekly/Weekly", "DOW Random Eff"),
+             labels = c("Weekly/Weekly", "Daily/Weekly, DOW Eff"),
+             latest = latest_wk, input = "summary")
+plot_layered(nowcasts = list(week_model_smry, nowcast_hardcode_agg),
+             labels = c("Weekly/Weekly", "Daily/Weekly, Hardcode Hazard"),
              latest = latest_wk, input = "summary")
 
-
-
-# Plots of nowcasts all on same frame
-plt <- plot_layered(nowcasts = list(nowcast_daily, nowcast_default,
-                                    nowcast_hzd_eff, nowcast_hardcode_hzd),
-                    labels = c("Daily/Daily", "DOW Random Eff",
-                               "Hazard Eff", "Hardcoded Hzd"))
-latest_obs <- readRDS("Data/latest_rep_cycle_dat.rds") |>
-  enw_filter_reference_dates(include_days = 28,
-                             latest_date = "2024-04-26")
-latest_obs <- epinowcast:::coerce_dt(latest_obs)
-latest_obs[, latest_confirm := confirm]
-latest_obs <- cbind(latest_obs, "Model" = "latest observations")
-plot <- plt +
-  geom_point(
-    data = latest_obs, aes(y = latest_confirm),
-    na.rm = TRUE, alpha = 1, size = 1.5, shape = 2
-  )
-plot
-
-# Look at DOW random effects 
+# Look at DOW effects
 post_daily <- enw_posterior(nowcast_daily$fit[[1]], variables = "rep_beta")
 post_default <- enw_posterior(nowcast_default$fit[[1]], variables = "rep_beta")
-post_hzd_eff <- enw_posterior(nowcast_hzd_eff$fit[[1]], variables = "rep_beta")
-# TODO: run hardcode hzd model with DOW effect
-
-# Compare daily nowcasts aggregated to weekly, to weekly nowcast
-nowcast_weekly_data <- readRDS("Nowcasts/nowcast_weekly_data.rds")
-daily_to_weekly <- get_weekly_nowcast_from_daily(nowcast_default,
-                                                 nowcast_data = readRDS("Data/retrospective_daily_dat.rds"), # nolint
-                                                 end_of_week = "Wed",
-                                                 output = "summary")
