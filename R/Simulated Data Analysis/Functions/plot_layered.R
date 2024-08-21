@@ -42,8 +42,8 @@ plot_layered <- function(nowcasts, labels, latest = NULL, input = "nowcast") {
   }
   if (!is.null(latest)) {
     latest_obs <- epinowcast:::coerce_dt(latest) |>
-      filter(reference_date >= min(smry$reference_date) &
-               reference_date <= max(smry$reference_date)) |>
+      filter(reference_date >= min(summaries$reference_date) &
+               reference_date <= max(summaries$reference_date)) |>
       mutate(latest_confirm = confirm)
     latest_obs <- cbind(latest_obs, "Model" = "Latest Observations")
     plt <- plt +

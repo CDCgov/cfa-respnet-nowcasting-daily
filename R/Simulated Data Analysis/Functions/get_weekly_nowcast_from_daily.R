@@ -25,10 +25,14 @@ get_weekly_nowcast_from_daily <- function(nowcast, nowcast_data,
     dplyr::filter(reference_date < last_date) |>
     dplyr::mutate(ref_wk = lubridate::ceiling_date(reference_date,
                                                    unit = "weeks",
-                                                   week_start = end_of_week)) |>
+                                                   week_start = end_of_week)
+                  # Need to subtract a day to account for differences in
+                  # indexing between lubridate and what I was doing
+                  - lubridate::days(1)) |>
     dplyr::mutate(rep_wk = lubridate::ceiling_date(report_date,
                                                    unit = "weeks",
-                                                   week_start = end_of_week)) |>
+                                                   week_start = end_of_week)
+                  - lubridate::days(1)) |>
     # Group by draws and reference + report week
     dplyr::group_by(ref_wk, .draw) |>
     # Then sum
@@ -43,6 +47,7 @@ get_weekly_nowcast_from_daily <- function(nowcast, nowcast_data,
   }
   if (match.arg(output, c("summary", "samples")) == "summary") {
     qt <- post_samples |>
+      dplyr::mutate(ref_wk = data.table::as.IDate(ref_wk)) |>
       dplyr::group_by(ref_wk) |>
       dplyr::summarise(tibble::as_tibble_row(quantile(week_sample, quantiles)))
     mean <- post_samples |>
