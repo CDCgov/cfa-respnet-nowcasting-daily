@@ -1,4 +1,4 @@
-# Model Runs on Sim Data: Some Results
+# Model Runs on Flu Data: Some Results
 
 # Data
 
@@ -19,4 +19,8 @@ Running three models:
 Model 2
 
 ![](README_files/plot.png)
+
+# Running Time and Basic Diagnostics
+
+Model 2 ran for 81 minutes and had 0 divergent transitions with a max_rhat of 1.
 
