@@ -47,4 +47,12 @@ Model 2 vs. Model 4:
 
 # Running Time and Basic Diagnostics
 
-TBA
+All models were run with 2 chains of 3000 samples each, 1/3 of these are warmup.
+
+Model 1 ran for 37 minutes and had 8 divergent transitions with a max_rhat of 1.
+
+Model 2 ran for 19 seconds and had 2 divergent transitions with a max_rhat of 1.
+
+Model 3 ran for 29 minutes and had 0 divergent transitions with a max_rhat of 1.
+
+Model 4 ran for 27 and had 0 divergent transitions with a max_rhat of 1.
