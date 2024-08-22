@@ -56,3 +56,17 @@ Model 2 ran for 19 seconds and had 2 divergent transitions with a max_rhat of 1.
 Model 3 ran for 29 minutes and had 0 divergent transitions with a max_rhat of 1.
 
 Model 4 ran for 27 and had 0 divergent transitions with a max_rhat of 1.
+
+# Posterior Predictions
+
+Model 1
+![](README_files/nowcast_daily_pp.svg)
+
+Model 2
+![](README_files/nowcast_weekly_data_pp.svg)
+
+Model 3
+![](README_files/nowcast_default_pp.svg)
+
+Model 4
+![](README_files/nowcast_hardcode_pp.svg)
