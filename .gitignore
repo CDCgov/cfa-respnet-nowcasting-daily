@@ -16,7 +16,7 @@
 *.doc
 *.docx
 *.htm
-*.html
+#*.html
 *.ppt
 *.pptx
 *.pdf
