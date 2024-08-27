@@ -12,7 +12,6 @@ sim_data <- sim_data_saved |>
 
 # Get incidence from linelist
 sim_data <- sim_data |>
-  filter(report_date >= "2024-02-01") |>
   enw_linelist_to_incidence(max_delay = 28) |>
   enw_complete_dates(max_delay = 28) |>
   mutate(day_of_week = lubridate::wday(report_date, label = TRUE))
@@ -21,8 +20,9 @@ sim_data <- sim_data |>
 # Get both retrospective and latest observations, and save (this
 # will be the daily data)
 sim_data_retrospective <- sim_data |>
-  enw_filter_report_dates(remove_days = 30) |>
-  enw_filter_reference_dates(include_days = 60) |>
+  enw_filter_report_dates(latest_date = "2024-04-24") |>
+  enw_filter_reference_dates(earliest_date = "2024-02-01",
+                             latest_date = "2024-04-24") |>
   mutate(.observed = ifelse(day_of_week == "Wed", TRUE, FALSE)) |>
   enw_preprocess_data(max_delay = 28)
 saveRDS(sim_data_retrospective, "Data/retrospective_daily_dat.rds")
@@ -55,8 +55,9 @@ rep_cycle_data <- sim_data |>
 # Now we want both a retrospective dataset and one with the most
 # up to date obs
 sim_data_retrospective <- rep_cycle_data |>
-  enw_filter_report_dates(remove_days = 30) |>
-  enw_filter_reference_dates(include_days = 60) |>
+  enw_filter_report_dates(latest_date = "2024-04-24") |>
+  enw_filter_reference_dates(earliest_date = "2024-02-01",
+                             latest_date = "2024-04-24") |>
   mutate(.observed = ifelse(day_of_week == "Wed", TRUE, FALSE)) |>
   enw_preprocess_data(max_delay = 28)
 saveRDS(sim_data_retrospective, "Data/retrospective_rep_cycle_dat.rds")
@@ -70,21 +71,21 @@ saveRDS(sim_data_latest, "Data/latest_rep_cycle_dat.rds")
 # Shouldn't specify a max_delay before using enw_aggregate_cumulative
 sim_data <- sim_data_saved |>
   mutate_all(~ as.Date(.x)) |>
-  filter(report_date >= "2024-02-01") |>
   enw_linelist_to_incidence() |>
   enw_complete_dates() |>
   mutate(day_of_week = lubridate::wday(report_date, label = TRUE))
 
 sim_data_weekly_retrospective <- sim_data |>
-  enw_filter_report_dates(remove_days = 30) |>
-  enw_filter_reference_dates(earliest_date = "2024-02-29") |>
+  enw_filter_report_dates(latest_date = "2024-04-24") |>
+  enw_filter_reference_dates(earliest_date = "2024-01-31",
+                             latest_date = "2024-04-24") |>
   enw_aggregate_cumulative(timestep = "week") |>
   enw_preprocess_data(max_delay = 4,
                       timestep = "week")
 saveRDS(sim_data_weekly_retrospective, "Data/retrospective_weekly_dat.rds")
 
 sim_data_weekly_latest <- sim_data |>
-  enw_filter_reference_dates(earliest_date = "2024-02-29") |>
+  enw_filter_reference_dates(earliest_date = "2024-02-01") |>
   enw_aggregate_cumulative(timestep = "week") |>
   enw_latest_data()
 saveRDS(sim_data_weekly_latest, "Data/latest_weekly_dat.rds")
