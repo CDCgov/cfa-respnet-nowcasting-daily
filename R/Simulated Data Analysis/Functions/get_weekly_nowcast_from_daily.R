@@ -11,28 +11,32 @@ get_weekly_nowcast_from_daily <- function(nowcast, nowcast_data,
   desired_first_date <- lubridate::floor_date(min(post_samples$reference_date),
                                               week_start = end_of_week,
                                               unit = "week")
-  miss_days <- nowcast_data$obs[[1]] |>
-    dplyr::filter(reference_date >= desired_first_date &
-                    reference_date < actual_first_date) |>
-    dplyr::summarise(sample = max(confirm), .by = reference_date)
-  miss_counts <- sum(miss_days$sample)
+  if (actual_first_date != desired_first_date) { 
+    miss_days <- nowcast_data$obs[[1]] |>
+      dplyr::filter(reference_date >= desired_first_date &
+                      reference_date < actual_first_date) |>
+      dplyr::summarise(sample = max(confirm), .by = reference_date)
+    miss_counts <- sum(miss_days$sample)
+  } else {
+    miss_counts <- 0
+  }
   # If last week is not full, cut it off
   last_date <- lubridate::floor_date(max(post_samples$reference_date),
-                                     week_start = end_of_week,
+                                     week_start = end_of_week - 1,
                                      unit = "week")
   # Convert dates to weeks
   post_samples <- post_samples |>
-    dplyr::filter(reference_date < last_date) |>
-    dplyr::mutate(ref_wk = lubridate::ceiling_date(reference_date,
-                                                   unit = "weeks",
-                                                   week_start = end_of_week)
-                  # Need to subtract a day to account for differences in
-                  # indexing between lubridate and what I was doing
-                  - lubridate::days(1)) |>
-    dplyr::mutate(rep_wk = lubridate::ceiling_date(report_date,
-                                                   unit = "weeks",
-                                                   week_start = end_of_week)
-                  - lubridate::days(1)) |>
+    dplyr::filter(reference_date <= last_date) |>
+    dplyr::mutate(ref_wk = ifelse(lubridate::wday(reference_date) != end_of_week, # nolint
+                                  lubridate::ceiling_date(reference_date,
+                                                          unit = "weeks",
+                                                          week_start = end_of_week - 1), # nolint
+                                  reference_date)) |>
+    dplyr::mutate(rep_wk = ifelse(lubridate::wday(report_date) != end_of_week, # nolint
+                                  lubridate::ceiling_date(report_date,
+                                                          unit = "weeks",
+                                                          week_start = end_of_week - 1), # nolint
+                                  report_date)) |>
     # Group by draws and reference + report week
     dplyr::group_by(ref_wk, .draw) |>
     # Then sum
