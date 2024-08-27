@@ -44,8 +44,8 @@ flu_data <- data_list |>
 flu_data <- flu_data[!duplicated(flu_data$CaseID), ]
 
 flu_data <- flu_data |>
-  enw_linelist_to_incidence(max_delay = 8 * 7) |>
-  enw_complete_dates(max_delay = 8 * 7) |>
+  enw_linelist_to_incidence() |>
+  enw_complete_dates() |>
   mutate(day_of_week = lubridate::wday(report_date, label = TRUE))
 
 # Get both retrospective and latest observations, and save
@@ -58,10 +58,28 @@ flu_data_retrospective <- flu_data |>
   mutate(not_report_day = ifelse(day_of_week != "Tue",
                                  1,
                                  0)) |>
-  enw_preprocess_data(max_delay = 8 * 7)
+  enw_preprocess_data()
 saveRDS(flu_data_retrospective, "Data/retrospective_flu_dat.rds")
 
 flu_data_latest <- flu_data |>
   filter(day_of_week == "Tue") |>
   enw_latest_data()
 saveRDS(flu_data_latest, "Data/latest_flu_dat.rds")
+
+# Aggregate reporting cycle data to weekly data
+flu_data_weekly_retrospective <- flu_data |>
+  enw_filter_report_dates(latest_date = "2024-02-28") |>
+  enw_filter_reference_dates(include_days = 98) |>
+  mutate(.observed = ifelse(day_of_week == "Tue", TRUE, FALSE)) |>
+  mutate(not_report_day = ifelse(day_of_week != "Tue",
+                                 1,
+                                 0)) |>
+  enw_aggregate_cumulative(timestep = "week") |>
+  enw_preprocess_data(timestep = "week")
+saveRDS(flu_data_weekly_retrospective, "Data/retrospective_weekly_flu_dat.rds")
+
+flu_data_weekly_latest <- flu_data |>
+  enw_filter_reference_dates(earliest_date = "2023-11-22") |>
+  enw_aggregate_cumulative(timestep = "week") |>
+  enw_latest_data()
+saveRDS(flu_data_weekly_latest, "Data/latest_weekly_flu_dat.rds")

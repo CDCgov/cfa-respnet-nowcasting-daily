@@ -30,9 +30,11 @@ report_module <- enw_report(~ 1, data = flu_data_weekly)
 nowcast_weekly_agg <- epinowcast(flu_data_weekly,
   expectation = expectation_module,
   report = report_module,
-  reference = reference_module(data = flu_data_weekly),
+  reference = reference_module(non_parametric = ~ 0 + delay_undercounted +
+                                 delay_overcounted, data = flu_data_weekly),
   obs = obs_module(data = flu_data_weekly),
   fit = fit,
+  priors = gamma_priors,
 )
 
 latest <- readRDS("Data/latest_weekly_flu_dat.rds") |>
@@ -40,6 +42,11 @@ latest <- readRDS("Data/latest_weekly_flu_dat.rds") |>
                              latest_date = "2024-02-28")
 
 plot(nowcast_weekly_agg, latest_obs = latest)
+
+# what's going on here
+fit <- nowcast_weekly_agg
+x <- enw_posterior(fit$fit[[1]], variables = "pp_inf_obs")
+summ <- enw_nowcast_summary(fit$fit[[1]], fit$obs[[1]], timestep = "week")
 
 diagnostic_summary <- nowcast_weekly_agg |>
   bind_rows() |>

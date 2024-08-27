@@ -18,7 +18,7 @@ gamma_priors <- tibble(
   sd = c(2.029, 0.404, .25, .15)
 )
 # Adjust for weekly -> daily scale
-# Scale up parametric delay by 7 (add log 7 to the mean/sd)
+# Scale up parametric delay by 7
 gamma_priors[1, 2:3] <- log(7) + gamma_priors[1, 2:3]
 # Scale down the growth rate (already multiplicative, so just divide by 7)
 gamma_priors[3:4, 2:3] <- gamma_priors[3:4, 2:3] / 7
@@ -33,7 +33,9 @@ model <- enw_model(
 
 nowcast <- epinowcast(flu_data,
   expectation = expectation_module(data = flu_data),
-  reference = reference_module(data = flu_data),
+  reference = reference_module(non_parametric = ~ 0 + delay_undercounted +
+                                 delay_overcounted,
+                               data = flu_data),
   report = enw_report(~ not_report_day,
                       data = flu_data),
   obs = obs_module(observation_indicator = ".observed",
@@ -42,9 +44,9 @@ nowcast <- epinowcast(flu_data,
   model = model
 )
 
-latest <- readRDS("Data/latest_rep_cycle_dat.rds") |>
-  enw_filter_reference_dates(include_days = 28,
-                             latest_date = "2024-04-26")
+latest <- readRDS("Data/latest_flu_dat.rds") |>
+  enw_filter_reference_dates(include_days = 56,
+                             latest_date = "2024-02-29")
 plot(nowcast, latest_obs = latest)
 
 diagnostic_summary <- nowcast |>

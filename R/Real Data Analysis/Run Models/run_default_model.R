@@ -43,7 +43,3 @@ plot(nowcast_default, latest_obs = latest)
 diagnostic_summary <- nowcast_default |>
   bind_rows() |>
   select(divergent_transitions, max_rhat, max_treedepth, no_at_max_treedepth)
-
-# what's going on here
-fit <- nowcast_default
-x <- enw_posterior(fit$fit[[1]])
