@@ -26,7 +26,7 @@ nowcast <- epinowcast(sim_data,
 
 latest <- readRDS("Data/latest_rep_cycle_dat.rds") |>
   enw_filter_reference_dates(include_days = 28,
-                             latest_date = "2024-04-26")
+                             latest_date = "2024-04-24")
 plot(nowcast, latest_obs = latest)
 
 diagnostic_summary <- nowcast |>

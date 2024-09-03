@@ -129,4 +129,3 @@ sim_seihrd <- function(init_state = c(99999, 1, 0, 0, 0, 0), beta, gamma, nu,
 
   return(rslt)
 }
-
