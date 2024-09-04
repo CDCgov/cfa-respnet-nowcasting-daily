@@ -41,30 +41,36 @@ number-sections: true
 
 Infectious disease outbreaks pose significant challenges to public health authorities, necessitating accurate and timely estimation of metrics like counts of hospital admissions. Nowcasting is the real-time estimation of such metrics, with adjustment for reporting delays. The granularity of these nowcasts plays a pivotal role; finer resolutions - for example, daily nowcasts as opposed to weekly - offer a more detailed understanding of the outbreak's dynamics and aid in predicting healthcare demands with greater precision. 
 
-A significant challenge in nowcasting lies in navigating the complexities of reporting cycles. Much of the nowcasting literature tends to assume that event and report processes occur with the same temporal resolution; for example, daily event dates with daily report dates. It is a common problem, however, to have report times with lower resolution than event times. The case we focus on in this report is the case of a fixed weekly reporting schedule, in which event data is given with daily resolution, but are reported once per week on a fixed day.
+A significant challenge in nowcasting lies in navigating the complexities of reporting cycles. Much of the nowcasting literature tends to assume that event and report processes occur with the same temporal resolution; for example, daily event dates with daily report dates. It is a common problem, however, to have report times with lower resolution than event times. The case we focus on in this paper is the case of a fixed weekly reporting schedule, in which event data is given with daily resolution, but are reported once per week on a fixed day.
 
-Within the framework of the `R` package `epinowcast`, we evaluate a few possible methods for nowcasting hospital admissions daily with a weekly reporting cycle. 
+TODO: citations etc
+
+Within the framework of the `R` package `epinowcast`, we evaluate a few possible methods for nowcasting hospital admissions daily with a weekly reporting cycle. We compare the nowcasts using these methods to each other and to the current baseline method which aggregates daily admission data to weekly to produce a weekly nowcast.
 
 ## Methods {#sec-methods}
 
-TODO: Flesh out outline of reporting cycle explanation.
+### The Fixed Weekly Reporting Cycle
 
-[Here: figure that illustrates the issue, reporting triangle?]
+The Respiratory Virus Hospitalization Surveillance Network, or [RESP-NET](https://www.cdc.gov/resp-net/dashboard/index.html) is a Centers for Disease Control and Prevention (CDC) system that tracks hospital admissions for three viruses that make up a significant proportion of hospitalizations caused by respiratory illnesses: respiratory syncitial virus (RSV), COVID-19, and influenza. These surveillance data are collected from counties in 12-14 states, accounting for about 8-10% of the U.S. propulation.
 
-Using `epinowcast` (details below), we will compare four different methods for nowcasting a fixed weekly reporting cycle with daily resolution:
+These data are collected with daily resolution; i.e., admission dates are collected at the daily level. The dates on which admission dates are recorded into a database, however, are not recorded with each admission date. Weekly, on a fixed day, a file containing all currently recorded admission dates is collected. Then, all information about the report date for each admission is associated with the day that the file containing all recorded admission dates is collected. Since this occurs once per week, report dates are only available with weekly resolution. TODO: other examples of phenomena like this
 
-1. A model with a fixed day-of-week (DOW) reporting effect
+[Here: figure that illustrates the issue, reporting triangle? struggling with this one]
 
-2. A model with a fixed effect hardcoded such that the reporting hazard for non-report days is approximately zero
+Current practice with these data is to aggregate the admission dates to weekly resolution to match the resolution of the report dates, and a weekly nowcast is obtained. The primary goal of this project is to compare several different methods of nowcasting with the original data to determine whether it is feasible to perform a daily nowcast rather than a weekly one.
 
-3.  A model which aggregates reporting probabilities and places them on only reporting days
-
-
-All of these are described in further detail below.
 
 ### Modeling {#sec-modeling}
 
 The `epinowcast` package in `R` is designed as a versatile framework for monitoring infectious diseases in real-time. It is an extension of the model developed by Günther et al. in _Nowcasting the COVID-19 pandemic in Bavaria._ [@guntheretal], which itself was an extension of the model proposed by Höhle and Heiden [@hohleandheiden] that uses a Bayesian hierarchical model with a discrete time survival model for the reporting delay distribution.
+
+Using `epinowcast`, we will compare four different methods for nowcasting a fixed weekly reporting cycle with daily resolution:
+
+1. A model with a fixed day-of-week (DOW) reporting effect.
+
+2. A model with a fixed effect hardcoded such that the reporting hazard for non-report days is approximately zero.
+
+3.  A model which aggregates reporting probabilities and places them on only reporting days.
 
 All three `epinowcast` models we will compare share very similar frameworks. The instantaneous growth rate $r_t$, defined as the log of the expected number of final observed hospital admissions between times $t$ and $t-1$, is modeled with a daily random walk:
 
@@ -97,6 +103,7 @@ and finally we have
 
 $$N_t = \sum_{d=0}^D n_{t,d}$$
 
+TODO: need to add expectation DOW random effect
 
 #### DOW Fixed Effect Model {#sec-model1}
 
@@ -147,7 +154,7 @@ These synthetic data are available entirely with daily resolution, including rep
 
 ### Real Data
 
-The real data is Daily/Weekly influenza hospital admission data from [RESP-NET](https://www.cdc.gov/resp-net/dashboard/index.html), the Respiratory Virus Hospitalization Surveillance Network. These surveillance data are collected from counties in 14 states, accounting for about 10% of the U.S. propulation. We use data from the 2021-2022 and 2022-2023 flu seasons, and run nowcasts across a series of reporting dates from those seasons to compare Weekly/Weekly models (the baseline) with Daily/Weekly models.
+The real data is Daily/Weekly influenza hospital admission data from RESP-NET. We use data from the 2021-2022 and 2022-2023 flu seasons, and run nowcasts across a series of reporting dates from those seasons to compare Weekly/Weekly models (the baseline) with Daily/Weekly models.
 
 ## Results
 
@@ -155,7 +162,9 @@ TODO: Deeper outline of results section
 
 ### Evaluation
 
-We compare performance of nowcasts using proper scoring rules [@czadoetal], which will evaluate both the calibration (accuracy) and the sharpness (precision) of the nowcasts.
+We compare performance of nowcasts using proper scoring rules [@czadoetal], which will evaluate both the calibration (accuracy) and the sharpness (precision) of the nowcasts. In particular, we use the continuous ranked probability score (CRPS), which is a score that generalizes absolute error. The CRPS is defined:
+
+TODO: add description/math
 
 ### Simulated Scenario
 
@@ -167,7 +176,7 @@ We compare performance of nowcasts using proper scoring rules [@czadoetal], whic
 
 [Here: scoring of Daily/Weekly vs. scoring of Weekly/Weekly]
 
-## Conclusions
+## Discussion
 
 ### Limitations and Further Work
 
