@@ -4,7 +4,13 @@ library(dplyr)
 setwd(here())
 source(file.path("R", "Simulated Data Analysis", "Run Models",
                  "model_definition.R"))
-flu_data <- readRDS("Data/retrospective_flu_dat.rds")
+list.files("R/Real Data Analysis/Functions",
+           pattern = "*.R", full.names = TRUE) |>
+  purrr::walk(source)
+flu_data_file <- "Data/flu_adm_2023-09-26.csv"
+# Process it
+flu_data <- subset_flu_data(flu_data_file, "2023-04-25",
+                            weeks_to_keep = 10, report_day = "Tue")
 
 # We also have "delay_0 effects" as in cfa-respnet-nowcasting
 flu_data$metadelay[[1]] <- flu_data$metadelay[[1]] |>
@@ -44,9 +50,14 @@ nowcast <- epinowcast(flu_data,
   model = model
 )
 
-latest <- readRDS("Data/latest_flu_dat.rds") |>
-  enw_filter_reference_dates(include_days = 56,
-                             latest_date = "2024-02-29")
+latest <- read.csv("Data/flu_adm_2023-09-26.csv") |>
+  enw_add_cumulative() |>
+  # 2 months out to avoid some of the backfilling?
+  enw_filter_report_dates(latest_date = "2023-06-25") |>
+  enw_complete_dates() |>
+  enw_filter_reference_dates(include_days = 70,
+                             latest_date = "2023-04-25") |>
+  enw_latest_data()
 plot(nowcast, latest_obs = latest)
 
 diagnostic_summary <- nowcast |>
