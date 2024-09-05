@@ -1,4 +1,10 @@
-# Run epinowcast on defaults using the flu data.
+# Run epinowcast using the fixed weekly reporting cycle data.
+# This model accounts for the rep cycle data using a DOW
+# fixed effect on the report day of week.
+# Since we also have "delay_0" and "delay_1" effects
+# (see cfa-respnet-nowcasting for details) we also
+# need to do some re-weighting, here using delay_undercounted
+# and delay_overcounted, unlike in the sim data
 library(here)
 library(dplyr)
 

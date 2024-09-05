@@ -6,7 +6,7 @@ list.files("R/Simulated Data Analysis/Functions",
   purrr::walk(source)
 setwd(here::here())
 
-nowcast_default <- readRDS("Real Data Nowcasts/nowcast_default.rds")
+nowcast_DOW <- readRDS("Real Data Nowcasts/nowcast_DOW.rds")
 #nowcast_hardcode_hzd <- readRDS("Nowcasts/nowcast_hardcode_hzd.rds") # nolint
 nowcast_weekly_data <- readRDS("Real Data Nowcasts/nowcast_weekly_data.rds")
 
@@ -39,8 +39,8 @@ ggplot(dat, aes(x = reference_date)) +
   theme(text = element_text(size = 26))
 
 # Plot daily nowcast
-summary <- epinowcast::enw_nowcast_summary(nowcast_default$fit[[1]],
-                                           nowcast_default$latest[[1]])
+summary <- epinowcast::enw_nowcast_summary(nowcast_DOW$fit[[1]],
+                                           nowcast_DOW$latest[[1]])
 summary <- summary[, c("reference_date", "mean", "median", "q5",
                        "q20", "q80", "q95")]
 summary$Data <- NA
@@ -82,12 +82,12 @@ week_model_smry <- enw_nowcast_summary(nowcast_weekly_data$fit[[1]],
                                                               "median", "q80",
                                                               "q95", "mean")] |>
   filter(reference_date > "2024-01-02")
-nowcast_default_agg <- get_weekly_nowcast_from_daily(nowcast_default,
+nowcast_DOW_agg <- get_weekly_nowcast_from_daily(nowcast_DOW,
                                                      nowcast_data = retrospective_daily_dat, # nolint
                                                      end_of_week = 3,
                                                      # 3 is Tue
                                                      output = "summary")
-plot_layered(nowcasts = list(week_model_smry, nowcast_default_agg),
+plot_layered(nowcasts = list(week_model_smry, nowcast_DOW_agg),
              labels = c("Weekly/Weekly", "Daily/Weekly, DOW Eff"),
              latest = latest_wk, input = "summary") +
   theme(text = element_text(size = 26))
