@@ -1,5 +1,5 @@
 ---
-title: Nowcast Daily Outline
+title: Nowcast Daily Outline/Very Rough Draft
 author:
   - name: Jessalyn Sebastian
     corresponding: false
@@ -25,11 +25,7 @@ author:
 keywords:
   - xxx
 abstract: |
-  xxx
-plain-language-summary: |
-  xxx
-key-points:
-  - xxx
+  Nowcasting is an area of research dedicated to addressing reporting delays in the real-time monitoring of key epidemiological indicators like hospital admission counts. When data used for nowcasting is recorded on different timescales, like days versus weeks, it becomes a greater challenge to accurately account for delays. This paper specifically investigates the scenario where hospital admission data are reported weekly on a fixed day, resulting in daily admission times but weekly reporting times. We compare several methods for generating a daily nowcast from this weekly reporting cycle data, within the comprehensive framework of the `R` package `epinowcast`.
 date: last-modified
 bibliography: "references.bib"
 citation:
@@ -39,7 +35,9 @@ number-sections: true
 
 ## Introduction
 
-Infectious disease outbreaks pose significant challenges to public health authorities, necessitating accurate and timely estimation of metrics like counts of hospital admissions. Nowcasting is the real-time estimation of such metrics, with adjustment for reporting delays. The granularity of these nowcasts plays a pivotal role; finer resolutions - for example, daily nowcasts as opposed to weekly - offer a more detailed understanding of the outbreak's dynamics and aid in predicting healthcare demands with greater precision. 
+Infectious disease outbreaks pose significant challenges to public health authorities, necessitating accurate and timely estimation of metrics like counts of hospital admissions. Hospital admissions provide insights into the strain placed on the healthcare system by a specific pathogen. These insights facilitate the management of resources like hospital beds, supplies and equipment, and medical staff, allowing hospitals to respond more quickly to changes in volume of patients. This is especially important for large-scale respiratory viruses such as influenza (flu), COVID-19, and respiratory syncytial virus (RSV): three viruses that, together, account for a large proportion of respiratory illness hospitalizations.
+
+Record-keeping itself, however, is an additional burden on already overstretched hospitals. Hospital admissions are not typically reported on the day they occur; instead, there is a delay of days or weeks before the data is officially reported. This lag needs to be accounted for when ascertaining the number of hospital admissions occurring in real time. Nowcasting is the real-time estimation of metrics like hospital admissions, with adjustment for reporting delays. The granularity of these nowcasts plays a pivotal role; finer resolutions - for example, daily nowcasts as opposed to weekly - offer a more detailed understanding of the outbreak's dynamics. 
 
 A significant challenge in nowcasting lies in navigating the complexities of reporting cycles. Much of the nowcasting literature tends to assume that event and report processes occur with the same temporal resolution; for example, daily event dates with daily report dates. It is a common problem, however, to have report times with lower resolution than event times. The case we focus on in this paper is the case of a fixed weekly reporting schedule, in which event data is given with daily resolution, but are reported once per week on a fixed day.
 
@@ -49,13 +47,25 @@ Within the framework of the `R` package `epinowcast`, we evaluate a few possible
 
 ## Methods {#sec-methods}
 
+### Nowcasting
+
+Nowcasting is a class of methods that estimates the true current state of a time series when observations from that time series are subject to delays. Hospital admissions are a fairly simple case of this because they are subject only to administrative reporting delays, rather than latent period and other delays that infectious disease case counts are subject to. When admissions and reports are both on the same timescale (e.g., daily) reported data can be easily visualized as a "triangle": looking backward in time from the current, with each subsequent day back we gain one day of reported data.
+
+[this is technically a fifth figure because I have four figures below, but it's meant to be a comparison to the one below... will work it out later.]
+
+![](images/plain_rep_triangle_rough.png)
+
+Nowcasting attempts to estimate the area in red, which is unknown due to reporting delays, by estimating a discrete probability distribution of delay times. This gives us a more accurate idea of hospitalizations in current time than the lagged data alone.
+
 ### The Fixed Weekly Reporting Cycle
 
 The Respiratory Virus Hospitalization Surveillance Network, or [RESP-NET](https://www.cdc.gov/resp-net/dashboard/index.html) is a Centers for Disease Control and Prevention (CDC) system that tracks hospital admissions for three viruses that make up a significant proportion of hospitalizations caused by respiratory illnesses: respiratory syncitial virus (RSV), COVID-19, and influenza. These surveillance data are collected from counties in 12-14 states, accounting for about 8-10% of the U.S. propulation.
 
-These data are collected with daily resolution; i.e., admission dates are collected at the daily level. The dates on which admission dates are recorded into a database, however, are not recorded with each admission date. Weekly, on a fixed day, a file containing all currently recorded admission dates is collected. Then, all information about the report date for each admission is associated with the day that the file containing all recorded admission dates is collected. Since this occurs once per week, report dates are only available with weekly resolution. TODO: other examples of phenomena like this
+These data are collected with daily resolution; i.e., admission dates are collected at the daily level. The dates on which admission dates are recorded into a database, however, are not recorded with each admission date. Weekly, on a fixed day, a file containing all currently recorded admission dates is collected. Then, all information about the report date for each admission is associated with the day that the file containing all recorded admission dates is collected. Since this occurs once per week, report dates are only available with weekly resolution. TODO: other examples?
 
-[Here: figure that illustrates the issue, reporting triangle? struggling with this one]
+[Here: figure that illustrates the issue, reporting triangle?]
+
+![](images/repcycle_reporting_tri_attempt1.png)
 
 Current practice with these data is to aggregate the admission dates to weekly resolution to match the resolution of the report dates, and a weekly nowcast is obtained. The primary goal of this project is to compare several different methods of nowcasting with the original data to determine whether it is feasible to perform a daily nowcast rather than a weekly one.
 
@@ -152,9 +162,11 @@ One outbreak scenario was simulated from a stochastic SEIHRD model (Susceptible 
 
 These synthetic data are available entirely with daily resolution, including reporting dates (Daily/Daily data), which is not possible with the real data. They can be aggregated to daily admission data with weekly reporting data (Daily/Weekly), and to weekly admission data with weekly reporting data (Weekly/Weekly).
 
-### Real Data
+### RESP-NET Flu Data
 
 The real data is Daily/Weekly influenza hospital admission data from RESP-NET. We use data from the 2021-2022 and 2022-2023 flu seasons, and run nowcasts across a series of reporting dates from those seasons to compare Weekly/Weekly models (the baseline) with Daily/Weekly models.
+
+TODO: add info about reweighting due to "delay_0"/"delay_1" effects. This may need to be discussed earlier especially if I redo the sim data to contain these.
 
 ## Results
 
@@ -170,11 +182,13 @@ TODO: add description/math
 
 [Here: visual comparison of Daily/Daily with Daily/Weekly, since this can only be done w/ sim data]
 
-### Real Data
+Section will discuss comparison of nowcasts with daily/daily data vs daily/weekly data. we could aggregate to weekly nowcasts to compare to weekly/weekly, or we could just save that for the real data because it didn't really seem that notable in the sim data. In the sim data I think what was notable was how well the daily/weekly model was doing compared to daily/daily.
+
+### RESP-NET Flu Data
 
 [Here: example visual Daily/Weekly nowcast + visual comparison of Daily/Weekly nowcast aggregated to weekly and Weekly/Weekly]
 
-[Here: scoring of Daily/Weekly vs. scoring of Weekly/Weekly]
+[Here: visual representation of scoring of many model runs]
 
 ## Discussion
 
