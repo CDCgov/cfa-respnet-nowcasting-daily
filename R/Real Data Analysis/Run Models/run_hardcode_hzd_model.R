@@ -25,8 +25,11 @@ gamma_priors <- tibble(
 )
 # Adjust for weekly -> daily scale
 # Scale up parametric delay by 7
-gamma_priors[1, 2:3] <- log(7) + gamma_priors[1, 2:3]
-# Scale down the growth rate (already multiplicative, so just divide by 7)
+# X ~ gamma(a,b) -> 7X ~ gamma(a, b/7)
+# Note that refp mean int and refp sd int are actually - log(shape)
+# and rate in the gamma distribution for us
+gamma_priors[2, 2:3] <- gamma_priors[2, 2:3] / 7
+# Scale down the growth rate
 gamma_priors[3:4, 2:3] <- gamma_priors[3:4, 2:3] / 7
 
 
