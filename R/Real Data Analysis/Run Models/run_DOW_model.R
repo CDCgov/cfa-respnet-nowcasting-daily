@@ -11,7 +11,14 @@ library(dplyr)
 setwd(here())
 source(file.path("R", "Simulated Data Analysis", "Run Models",
                  "model_definition.R"))
-flu_data <- readRDS("Data/retrospective_flu_dat.rds")
+
+list.files("R/Real Data Analysis/Functions",
+           pattern = "*.R", full.names = TRUE) |>
+  purrr::walk(source)
+flu_data_file <- "Data/flu_adm_2023-09-26.csv"
+# Process it
+flu_data <- subset_flu_data(flu_data_file, "2023-04-25",
+                            weeks_to_keep = 10, report_day = "Tue")
 
 # We also have "delay_0 effects" as in cfa-respnet-nowcasting
 flu_data$metadelay[[1]] <- flu_data$metadelay[[1]] |>
@@ -25,9 +32,12 @@ gamma_priors <- tibble(
   sd = c(2.029, 0.404, .25, .15)
 )
 # Adjust for weekly -> daily scale
-# Scale up parametric delay by 7 (add log 7 to the mean/sd)
-gamma_priors[1, 2:3] <- log(7) + gamma_priors[1, 2:3]
-# Scale down the growth rate (already multiplicative, so just divide by 7)
+# Scale up parametric delay by 7
+# X ~ gamma(a,b) -> 7X ~ gamma(a, b/7)
+# Note that refp mean int and refp sd int are actually -log(shape)
+# and rate in the gamma distribution for us
+gamma_priors[2, 2:3] <- gamma_priors[2, 2:3] / 7
+# Scale down the growth rate
 gamma_priors[3:4, 2:3] <- gamma_priors[3:4, 2:3] / 7
 
 nowcast_default <- epinowcast(flu_data,
