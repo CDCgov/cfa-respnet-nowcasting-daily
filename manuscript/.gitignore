@@ -1,7 +1,0 @@
-# Ignore everything except README, quarto yaml, index, and references
-_extensions
-_freeze
-notebooks
-requirements.txt
-_manuscript
-/.quarto/
