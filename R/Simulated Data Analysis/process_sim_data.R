@@ -69,6 +69,7 @@ saveRDS(sim_data_latest, "Data/latest_rep_cycle_dat.rds")
 
 #### AGGREGATE DAILY TO WEEKLY DATA ####
 # Shouldn't specify a max_delay before using enw_aggregate_cumulative
+# Starting from saved sim data:
 sim_data <- sim_data_saved |>
   mutate_all(~ as.Date(.x)) |>
   enw_linelist_to_incidence() |>
