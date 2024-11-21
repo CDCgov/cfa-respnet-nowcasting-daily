@@ -22,7 +22,6 @@ obs_module <- partial(
 )
 
 fit <- enw_fit_opts(
-  init_method = "pathfinder",
   save_warmup = FALSE, pp = TRUE,
   chains = 2, threads_per_chain = 1,
   parallel_chains = 2,

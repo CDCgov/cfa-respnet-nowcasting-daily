@@ -9,10 +9,22 @@ source(file.path("R", "Simulated Data Analysis", "Run Models",
                  "model_definition.R"))
 sim_data <- readRDS("Data/retrospective_rep_cycle_dat.rds")
 
+# Need to be able to control which day is "baseline"
+# Here, Wednesday is the report day
+sim_data$metareport[[1]] <- sim_data$metareport[[1]] %>%
+  mutate(day_of_week = factor(day_of_week,
+                              levels = c("Wednesday", "Monday", "Tuesday",
+                                         "Thursday", "Friday", "Saturday",
+                                         "Sunday")))
+
+
+
 nowcast_DOW <- epinowcast(sim_data,
   expectation = expectation_module(data = sim_data),
   reference = reference_module(data = sim_data),
-  report = enw_report(~ day_of_week, data = sim_data),
+  # Wed is report day
+  report = enw_report(~ Monday + Tuesday + Thursday + Friday + Saturday + Sunday,
+                      data = sim_data),
   obs = obs_module(data = sim_data),
   fit = fit
 )
