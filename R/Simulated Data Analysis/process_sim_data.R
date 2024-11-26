@@ -2,10 +2,33 @@ library(epinowcast)
 library(dplyr)
 library(tidyr)
 library(here)
-
 setwd(here::here())
+
+## Generate sim data with functions in sim_hospital_admissions.R
+#source("Functions/sim_hospital_admissions.R")
+#set.seed(87)
+#beta <- 0.6
+#gamma <- 1 / 3
+#nu <- 1 / 5
+#eta <- 1 / 6
+#kappa <- 1/3
+#tau <- 1 / 10
+#v <- 1 / 10
+## Simulate from compartmental model
+#dat <- sim_seihrd(init_state = c(49990, 10, 0, 0, 0, 0),
+#                 beta, gamma, nu, eta, kappa, tau, v, 120)
+## The rows in dat are by event, not time points,
+## so keep only unique time points.
+#times <- dat[c(FALSE, diff(dat$H) == 1), "Time"]
+## Then move from arbitrary times to days and 
+## add gamma reporting delay
+#sim_data <- get_report_times(times, start_date = "2023-11-01",
+#                            delay_dist = "rgamma", max_delay = 28,
+#                            shape = 1.5, scale = 3)
+#write.csv(sim_data, "Data/sim_data.csv")
+
+# Read in sim data if already saved
 sim_data_saved <- read.csv("Data/sim_data.csv")[, -1]
-# Sim data generated with functions in sim_hospital_admissions.R
 colnames(sim_data_saved) <- c("reference_date", "report_date")
 sim_data <- sim_data_saved |>
   mutate_all(~ as.Date(.x))
