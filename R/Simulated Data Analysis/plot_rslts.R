@@ -6,9 +6,10 @@ list.files("R/Simulated Data Analysis/Functions",
   purrr::walk(source)
 setwd(here::here())
 
+# Code assumes rds files of model runs saved into a
+# Nowcasts directory
 nowcast_daily <- readRDS("Nowcasts/nowcast_daily_data.rds")
-nowcast_default <- readRDS("Nowcasts/nowcast_default.rds")
-nowcast_hzd_eff <- readRDS("Nowcasts/nowcast_hzd_eff.rds")
+nowcast_DOW <- readRDS("Nowcasts/nowcast_DOW.rds")
 nowcast_hardcode_hzd <- readRDS("Nowcasts/nowcast_hardcode_hzd.rds")
 nowcast_weekly_data <- readRDS("Nowcasts/nowcast_weekly_data.rds")
 
@@ -43,7 +44,7 @@ ggplot(dat, aes(x = reference_date)) +
 
 # Plot each daily nowcast on top of the daily/daily
 latest <- readRDS("Data/latest_daily_dat.rds")
-plot_layered(nowcasts = list(nowcast_daily, nowcast_default),
+plot_layered(nowcasts = list(nowcast_daily, nowcast_DOW),
              labels = c("Daily/Daily", "Daily/Weekly, DOW Eff"),
              latest = latest)  +
   theme(text = element_text(size = 26))
@@ -64,7 +65,7 @@ week_model_smry <- enw_nowcast_summary(nowcast_weekly_data$fit[[1]],
                                                               "q5", "q20",
                                                               "median", "q80",
                                                               "q95", "mean")]
-nowcast_default_agg <- get_weekly_nowcast_from_daily(nowcast_default,
+nowcast_DOW_agg <- get_weekly_nowcast_from_daily(nowcast_DOW,
                                                      nowcast_data = retrospective_rep_cycle_dat, # nolint
                                                      end_of_week = 4,
                                                      # 4 is Wed
@@ -73,7 +74,7 @@ nowcast_hardcode_agg <- get_weekly_nowcast_from_daily(nowcast_hardcode_hzd,
                                                       nowcast_data = retrospective_daily_dat, # nolint
                                                       end_of_week = 4,
                                                       output = "summary")
-plot_layered(nowcasts = list(week_model_smry, nowcast_default_agg),
+plot_layered(nowcasts = list(week_model_smry, nowcast_DOW_agg),
              labels = c("Weekly/Weekly", "Daily/Weekly, DOW Eff"),
              latest = latest_wk, input = "summary")  +
   theme(text = element_text(size = 26))
@@ -102,7 +103,7 @@ nowcast_weekly_data |>
 
 # Look at DOW effects
 post_daily <- enw_posterior(nowcast_daily$fit[[1]], variables = "rep_beta")
-post_default <- enw_posterior(nowcast_default$fit[[1]], variables = "rep_beta")
+post_DOW <- enw_posterior(nowcast_DOW$fit[[1]], variables = "rep_beta")
 
 # Posterior predictions
 plot(nowcast_weekly_data , type = "posterior") +
